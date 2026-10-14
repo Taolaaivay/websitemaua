@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cửa Hàng Minecraft Server</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=VT323&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            pixel: ['"VT323"', 'monospace']
+          },
+          colors: {
+            mc: {
+              green: '#2ecc71',
+              darkgreen: '#27ae60',
+              gold: '#f39c12',
+              diamond: '#00d2d3',
+              dark: '#121418',
+              card: '#1a1d24',
+              border: '#2a2e38'
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      background-color: #0d0f12;
+      background-image: radial-gradient(rgba(46, 204, 113, 0.08) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+    .mc-btn {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      box-shadow: 0 4px 0 #1b7a43;
+    }
+    .mc-btn:active {
+      transform: translateY(3px);
+      box-shadow: 0 1px 0 #1b7a43;
+    }
+    .card-glow:hover {
+      box-shadow: 0 0 25px rgba(0, 210, 211, 0.18);
+      border-color: rgba(0, 210, 211, 0.5);
+    }
+    .pixel-text {
+      text-shadow: 2px 2px 0px rgba(0,0,0,0.8);
+    }
+  </style>
+</head>
+<body class="text-gray-100 min-h-screen flex flex-col font-sans">
+
+  <!-- NAVBAR -->
+  <header class="border-b border-mc-border bg-mc-dark/90 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 h-20 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <img src="https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.20.4/assets/minecraft/textures/item/diamond.png" class="w-10 h-10 object-contain drop-shadow" alt="Logo">
+        <div>
+          <h1 class="font-extrabold text-2xl tracking-wider text-white flex items-center gap-2">
+            MAUA <span class="text-mc-green">STORE</span>
+          </h1>
+          <p class="text-xs text-gray-400">Cửa hàng vật phẩm & quà tặng Server</p>
+        </div>
+      </div>
+
+      <!-- Quick Server Info -->
+      <div class="flex items-center gap-4">
+        <div class="hidden sm:flex items-center gap-2 bg-mc-card px-3.5 py-1.5 rounded-lg border border-mc-border text-xs">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+          <span class="text-gray-300 font-medium">Server Online</span>
+          <span id="player-count" class="bg-mc-dark px-2 py-0.5 rounded text-mc-diamond font-bold">24/7</span>
+        </div>
+        <a href="/admin.html" class="text-gray-400 hover:text-white text-xs bg-mc-card hover:bg-mc-border px-3 py-2 rounded-lg border border-mc-border transition flex items-center gap-1.5">
+          <i class="fa-solid fa-lock text-mc-gold"></i> Admin
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN HERO & PLAYER IDENTIFIER -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 py-8">
+    
+    <!-- Hero Box: Input In-Game Name -->
+    <div class="bg-gradient-to-r from-mc-card via-gray-900 to-mc-card border border-mc-border rounded-2xl p-6 sm:p-8 mb-10 shadow-2xl relative overflow-hidden">
+      <div class="absolute -right-8 -bottom-8 opacity-10 pointer-events-none">
+        <i class="fa-solid fa-cube text-[200px] text-mc-green"></i>
+      </div>
+
+      <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+        <div class="max-w-xl text-center md:text-left">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-mc-green/10 text-mc-green text-xs font-bold mb-3 border border-mc-green/20">
+            <i class="fa-solid fa-bolt"></i> Tự động phát đồ vào Server trong 5 giây!
+          </div>
+          <h2 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mb-2">
+            Nhận Đồ & Nâng Cấp Trang Bị
+          </h2>
+          <p class="text-gray-400 text-sm leading-relaxed">
+            Nhập tên nhân vật trong game để xem skin, chọn đồ bạn thích và nhận ngay vào túi đồ Minecraft!
+          </p>
+        </div>
+
+        <!-- IGN Input Box with Live Skin -->
+        <div class="w-full md:w-auto bg-mc-dark/95 border-2 border-mc-border focus-within:border-mc-green rounded-2xl p-4 flex items-center gap-4 transition shadow-lg">
+          <div class="relative w-16 h-16 rounded-xl bg-gray-800 border border-mc-border flex items-center justify-center overflow-hidden shrink-0">
+            <img id="player-avatar" src="https://mc-heads.net/avatar/Steve/64" alt="Skin Avatar" class="w-14 h-14 rounded-lg object-contain">
+          </div>
+          <div class="flex-1 min-w-[200px]">
+            <label class="text-[11px] font-bold text-gray-400 uppercase tracking-wider block mb-1">
+              Tên Trong Game (IGN)
+            </label>
+            <input 
+              type="text" 
+              id="ign-input" 
+              placeholder="Ví dụ: Steve, Maua..." 
+              class="w-full bg-transparent text-white font-bold text-lg placeholder-gray-600 focus:outline-none"
+              autocomplete="off"
+            >
+          </div>
+          <span id="ign-status" class="text-mc-green text-sm px-2 py-1 bg-mc-green/10 rounded-md font-semibold hidden">
+            <i class="fa-solid fa-check"></i>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CATEGORIES BAR -->
+    <div class="flex items-center gap-2 overflow-x-auto pb-4 mb-6 text-sm no-scrollbar">
+      <button onclick="filterCategory('all')" class="cat-btn active bg-mc-green text-gray-900 font-bold px-4 py-2 rounded-xl transition whitespace-nowrap shadow">
+        Tất Cả Vật Phẩm
+      </button>
+      <button onclick="filterCategory('free')" class="cat-btn bg-mc-card hover:bg-mc-border text-gray-300 font-medium px-4 py-2 rounded-xl border border-mc-border transition whitespace-nowrap">
+        🎁 Quà Miễn Phí
+      </button>
+      <button onclick="filterCategory('weapons')" class="cat-btn bg-mc-card hover:bg-mc-border text-gray-300 font-medium px-4 py-2 rounded-xl border border-mc-border transition whitespace-nowrap">
+        ⚔️ Vũ Khí
+      </button>
+      <button onclick="filterCategory('armor')" class="cat-btn bg-mc-card hover:bg-mc-border text-gray-300 font-medium px-4 py-2 rounded-xl border border-mc-border transition whitespace-nowrap">
+        🛡️ Áo Giáp
+      </button>
+      <button onclick="filterCategory('resources')" class="cat-btn bg-mc-card hover:bg-mc-border text-gray-300 font-medium px-4 py-2 rounded-xl border border-mc-border transition whitespace-nowrap">
+        💎 Tài Nguyên
+      </button>
+      <button onclick="filterCategory('ranks')" class="cat-btn bg-mc-card hover:bg-mc-border text-gray-300 font-medium px-4 py-2 rounded-xl border border-mc-border transition whitespace-nowrap">
+        ⭐ Quyền Lợi / VIP
+      </button>
+    </div>
+
+    <!-- ITEMS GRID -->
+    <div id="items-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Loading skeleton -->
+      <div class="col-span-full py-16 text-center text-gray-500">
+        <i class="fa-solid fa-circle-notch fa-spin text-3xl mb-3 text-mc-green"></i>
+        <p>Đang tải danh sách vật phẩm từ Server...</p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="border-t border-mc-border bg-mc-dark py-8 mt-16 text-center text-xs text-gray-500">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p>© 2026 MAUA Minecraft Store. Tự động kết nối và phát đồ 24/7.</p>
+      <div class="flex items-center gap-4">
+        <span class="text-gray-400">Không thuộc sở hữu của Mojang AB</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- CHECKOUT / ORDER MODAL -->
+  <div id="order-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-mc-card border border-mc-border rounded-2xl max-w-md w-full p-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+      <button onclick="closeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-white w-8 h-8 rounded-lg bg-mc-dark flex items-center justify-center">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <!-- Step 1: Confirm Order -->
+      <div id="modal-step-confirm">
+        <h3 class="text-xl font-extrabold text-white mb-1">Xác Nhận Mua Vật Phẩm</h3>
+        <p class="text-xs text-gray-400 mb-5">Đồ sẽ được chuyển trực tiếp vào rương/túi đồ của bạn</p>
+
+        <!-- Player Card Preview -->
+        <div class="bg-mc-dark rounded-xl p-3 border border-mc-border flex items-center gap-3 mb-4">
+          <img id="modal-player-head" src="https://mc-heads.net/avatar/Steve/48" class="w-12 h-12 rounded-lg" alt="Player">
+          <div>
+            <div class="text-[10px] text-gray-400 uppercase font-bold">Người nhận đồ</div>
+            <div id="modal-player-name" class="font-bold text-mc-green text-base">Steve</div>
+          </div>
+        </div>
+
+        <!-- Selected Item Details -->
+        <div class="bg-gray-900/60 rounded-xl p-4 border border-mc-border flex items-center gap-4 mb-5">
+          <img id="modal-item-icon" src="" class="w-14 h-14 object-contain" alt="Item">
+          <div class="flex-1">
+            <h4 id="modal-item-name" class="font-bold text-white text-base">Tên đồ</h4>
+            <p id="modal-item-desc" class="text-xs text-gray-400 line-clamp-2 mt-0.5">Mô tả</p>
+            <div id="modal-item-price" class="text-mc-gold font-extrabold text-sm mt-1">20,000 đ</div>
+          </div>
+        </div>
+
+        <!-- Payment Mode Select -->
+        <div class="space-y-3 mb-6">
+          <label class="text-xs font-bold text-gray-300 block">Hình thức nhận:</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" id="btn-pay-vietqr" onclick="selectPayMethod('vietqr')" class="pay-method-btn active p-3 rounded-xl border border-mc-green bg-mc-green/10 text-left transition">
+              <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-qrcode text-mc-green"></i> Quét VietQR
+              </div>
+              <div class="text-[10px] text-gray-400 mt-1">Mã ngân hàng tự động</div>
+            </button>
+            <button type="button" id="btn-pay-test" onclick="selectPayMethod('test')" class="pay-method-btn p-3 rounded-xl border border-mc-border bg-mc-dark text-left transition hover:border-gray-600">
+              <div class="text-xs font-bold text-white flex items-center gap-1.5">
+                <i class="fa-solid fa-gift text-mc-diamond"></i> Nhận Thử / Free
+              </div>
+              <div class="text-[10px] text-gray-400 mt-1">Dành cho bạn bè test</div>
+            </button>
+          </div>
+        </div>
+
+        <!-- QR Code section (if VietQR is selected and item has price) -->
+        <div id="qr-container" class="hidden bg-white p-4 rounded-xl text-center mb-5">
+          <p class="text-xs text-gray-700 font-bold mb-2">Quét mã QR qua App Ngân hàng bất kỳ</p>
+          <img id="qr-image" src="" alt="VietQR" class="w-48 h-48 mx-auto object-contain rounded-lg border">
+          <p class="text-[11px] text-gray-500 mt-2">Chuyển xong bấm <b>"Tôi Đã Chuyển Tiền"</b> bên dưới!</p>
+        </div>
+
+        <!-- Submit Button -->
+        <button id="btn-confirm-order" onclick="submitOrder()" class="mc-btn w-full bg-mc-green hover:bg-mc-darkgreen text-gray-950 font-black py-3 rounded-xl uppercase tracking-wider text-sm flex items-center justify-center gap-2">
+          <span>Xác Nhận Nhận Đồ</span> <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </div>
+
+      <!-- Step 2: Success State -->
+      <div id="modal-step-success" class="hidden text-center py-6">
+        <div class="w-16 h-16 rounded-full bg-mc-green/20 text-mc-green border border-mc-green/40 flex items-center justify-center text-3xl mx-auto mb-4 animate-bounce">
+          <i class="fa-solid fa-check"></i>
+        </div>
+        <h3 class="text-2xl font-black text-white mb-1">Thành Công!</h3>
+        <p class="text-sm text-gray-300 mb-4">
+          Đơn hàng <span id="success-order-id" class="text-mc-diamond font-bold">#MAUA</span> đã gửi đến Server.
+        </p>
+
+        <div class="bg-mc-dark p-4 rounded-xl border border-mc-border text-left text-xs text-gray-300 space-y-2 mb-6">
+          <div class="flex items-center gap-2 text-mc-green font-bold">
+            <i class="fa-solid fa-circle-check"></i> Server đang tiến hành phát đồ!
+          </div>
+          <p class="text-gray-400">
+            • Bạn chỉ cần mở game Minecraft vào server.<br>
+            • Đồ sẽ tự động bay vào túi đồ của bạn kèm âm thanh thông báo.
+          </p>
+        </div>
+
+        <button onclick="closeModal()" class="w-full bg-mc-border hover:bg-gray-700 text-white font-bold py-2.5 rounded-xl text-xs transition">
+          Đóng và Tiếp tục mua sắm
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    let allItems = [];
+    let selectedItem = null;
+    let currentCategory = 'all';
+    let currentPayMethod = 'vietqr';
+
+    const ignInput = document.getElementById('ign-input');
+    const playerAvatar = document.getElementById('player-avatar');
+    const ignStatus = document.getElementById('ign-status');
+
+    // Load saved IGN
+    const savedIgn = localStorage.getItem('maua_player_ign') || '';
+    if (savedIgn) {
+      ignInput.value = savedIgn;
+      updateAvatar(savedIgn);
+    }
+
+    // IGN input listener
+    let ignTimeout = null;
+    ignInput.addEventListener('input', (e) => {
+      const val = e.target.value.trim();
+      clearTimeout(ignTimeout);
+      ignTimeout = setTimeout(() => {
+        if (val.length >= 2) {
+          updateAvatar(val);
+          localStorage.setItem('maua_player_ign', val);
+          ignStatus.classList.remove('hidden');
+        } else {
+          playerAvatar.src = 'https://mc-heads.net/avatar/Steve/64';
+          ignStatus.classList.add('hidden');
+        }
+      }, 300);
+    });
+
+    function updateAvatar(name) {
+      playerAvatar.src = `https://mc-heads.net/avatar/${encodeURIComponent(name)}/64`;
+    }
+
+    // Fetch items
+    async function fetchItems() {
+      try {
+        const res = await fetch('/api/items');
+        const data = await res.json();
+        if (data.success && data.items) {
+          allItems = data.items;
+          renderItems();
+        }
+      } catch (err) {
+        console.error('Fetch items error:', err);
+      }
+    }
+
+    function renderItems() {
+      const grid = document.getElementById('items-grid');
+      const filtered = currentCategory === 'all' 
+        ? allItems 
+        : allItems.filter(i => i.category === currentCategory);
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `
+          <div class="col-span-full py-16 text-center text-gray-500">
+            <i class="fa-solid fa-box-open text-4xl mb-3"></i>
+            <p>Chưa có vật phẩm nào trong danh mục này.</p>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = filtered.map(item => `
+        <div class="bg-mc-card border border-mc-border hover:border-mc-green/60 rounded-2xl p-5 flex flex-col justify-between transition-all duration-300 card-glow group">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-[11px] font-bold px-2.5 py-1 rounded-md uppercase tracking-wider ${
+                item.price === 0 ? 'bg-mc-green/10 text-mc-green border border-mc-green/30' : 'bg-gray-800 text-gray-400'
+              }">
+                ${item.price === 0 ? 'Miễn Phí' : item.category.toUpperCase()}
+              </span>
+              <span class="text-xs text-gray-400 flex items-center gap-1">
+                <i class="fa-solid fa-shield-halved text-mc-diamond"></i> Tự động
+              </span>
+            </div>
+
+            <!-- Item Icon & Name -->
+            <div class="text-center py-4">
+              <img src="${item.icon}" alt="${item.name}" class="w-20 h-20 mx-auto object-contain transition group-hover:scale-110 drop-shadow-lg">
+              <h3 class="font-extrabold text-lg text-white mt-3 group-hover:text-mc-green transition">
+                ${item.name}
+              </h3>
+              <p class="text-xs text-gray-400 mt-1 line-clamp-2 px-2">
+                ${item.description}
+              </p>
+            </div>
+          </div>
+
+          <!-- Price & Action -->
+          <div class="pt-4 border-t border-mc-border flex items-center justify-between mt-2">
+            <div>
+              <div class="text-[10px] text-gray-500 uppercase font-bold">Giá</div>
+              <div class="font-extrabold text-base ${item.price === 0 ? 'text-mc-green' : 'text-mc-gold'}">
+                ${item.price === 0 ? 'MIỄN PHÍ' : item.price.toLocaleString('vi-VN') + ' đ'}
+              </div>
+            </div>
+            <button onclick="openModal('${item.id}')" class="mc-btn bg-mc-green hover:bg-mc-darkgreen text-gray-950 font-black px-4 py-2 rounded-xl text-xs uppercase flex items-center gap-1.5">
+              <span>${item.price === 0 ? 'Nhận Ngay' : 'Mua Ngay'}</span>
+              <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function filterCategory(cat) {
+      currentCategory = cat;
+      document.querySelectorAll('.cat-btn').forEach(btn => {
+        btn.classList.remove('active', 'bg-mc-green', 'text-gray-900', 'font-bold');
+        btn.classList.add('bg-mc-card', 'text-gray-300');
+      });
+      event.target.classList.add('active', 'bg-mc-green', 'text-gray-900', 'font-bold');
+      event.target.classList.remove('bg-mc-card', 'text-gray-300');
+      renderItems();
+    }
+
+    // Modal controls
+    function openModal(itemId) {
+      const ign = ignInput.value.trim();
+      if (!ign) {
+        ignInput.focus();
+        ignInput.classList.add('ring-2', 'ring-red-500');
+        setTimeout(() => ignInput.classList.remove('ring-2', 'ring-red-500'), 1500);
+        alert('Vui lòng nhập Tên Trong Game (IGN) của bạn trước khi chọn mua đồ!');
+        return;
+      }
+
+      selectedItem = allItems.find(i => i.id === itemId);
+      if (!selectedItem) return;
+
+      document.getElementById('modal-player-head').src = `https://mc-heads.net/avatar/${encodeURIComponent(ign)}/48`;
+      document.getElementById('modal-player-name').innerText = ign;
+      document.getElementById('modal-item-icon').src = selectedItem.icon;
+      document.getElementById('modal-item-name').innerText = selectedItem.name;
+      document.getElementById('modal-item-desc').innerText = selectedItem.description;
+      document.getElementById('modal-item-price').innerText = selectedItem.price === 0 ? 'MIỄN PHÍ' : selectedItem.price.toLocaleString('vi-VN') + ' đ';
+
+      // Default payment method
+      if (selectedItem.price === 0) {
+        selectPayMethod('test');
+        document.getElementById('btn-pay-vietqr').classList.add('hidden');
+      } else {
+        document.getElementById('btn-pay-vietqr').classList.remove('hidden');
+        selectPayMethod('vietqr');
+      }
+
+      document.getElementById('modal-step-confirm').classList.remove('hidden');
+      document.getElementById('modal-step-success').classList.add('hidden');
+      document.getElementById('order-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('order-modal').classList.add('hidden');
+    }
+
+    function selectPayMethod(method) {
+      currentPayMethod = method;
+      const btnQr = document.getElementById('btn-pay-vietqr');
+      const btnTest = document.getElementById('btn-pay-test');
+      const qrBox = document.getElementById('qr-container');
+
+      if (method === 'vietqr') {
+        btnQr.classList.add('border-mc-green', 'bg-mc-green/10');
+        btnTest.classList.remove('border-mc-green', 'bg-mc-green/10');
+
+        // Dynamic VietQR generator
+        if (selectedItem && selectedItem.price > 0) {
+          const ign = ignInput.value.trim();
+          const transferCode = `MAUA ${ign} ${selectedItem.id.slice(0, 6)}`;
+          // Default demo VietQR (MBBank)
+          const qrUrl = `https://img.vietqr.io/image/MB-0987654321-compact2.png?amount=${selectedItem.price}&addInfo=${encodeURIComponent(transferCode)}&accountName=MAUA%20SERVER`;
+          document.getElementById('qr-image').src = qrUrl;
+          qrBox.classList.remove('hidden');
+        }
+      } else {
+        btnTest.classList.add('border-mc-green', 'bg-mc-green/10');
+        btnQr.classList.remove('border-mc-green', 'bg-mc-green/10');
+        qrBox.classList.add('hidden');
+      }
+    }
+
+    async function submitOrder() {
+      const ign = ignInput.value.trim();
+      if (!ign || !selectedItem) return;
+
+      const btn = document.getElementById('btn-confirm-order');
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang xử lý...`;
+
+      try {
+        const res = await fetch('/api/order', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            player: ign,
+            itemId: selectedItem.id,
+            paymentMethod: currentPayMethod
+          })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('success-order-id').innerText = '#' + data.order.id;
+          document.getElementById('modal-step-confirm').classList.add('hidden');
+          document.getElementById('modal-step-success').classList.remove('hidden');
+        } else {
+          alert('Có lỗi xảy ra: ' + data.error);
+        }
+      } catch (err) {
+        alert('Lỗi kết nối tới máy chủ: ' + err.message);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = `<span>Xác Nhận Nhận Đồ</span> <i class="fa-solid fa-arrow-right"></i>`;
+      }
+    }
+
+    // Init
+    fetchItems();
+  </script>
+</body>
+</html>

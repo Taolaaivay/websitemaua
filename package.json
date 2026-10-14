@@ -1,0 +1,10 @@
+{
+  "name": "websitemaua",
+  "version": "1.0.0",
+  "description": "Website Shop Minecraft liên kết Server",
+  "main": "index.html",
+  "scripts": {
+    "start": "serve ."
+  },
+  "dependencies": {}
+}

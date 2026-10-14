@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quản Trị Cửa Hàng - Admin Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'sans-serif'] },
+          colors: {
+            mc: {
+              green: '#2ecc71',
+              darkgreen: '#27ae60',
+              gold: '#f39c12',
+              diamond: '#00d2d3',
+              dark: '#121418',
+              card: '#1a1d24',
+              border: '#2a2e38'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen font-sans">
+
+  <!-- LOGIN OVERLAY -->
+  <div id="login-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div class="bg-mc-card border border-mc-border rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl">
+      <div class="w-12 h-12 rounded-xl bg-mc-gold/20 text-mc-gold border border-mc-gold/40 flex items-center justify-center mx-auto mb-3 text-xl">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <h2 class="text-xl font-bold text-white mb-1">Đăng Nhập Quản Trị</h2>
+      <p class="text-xs text-gray-400 mb-5">Nhập mật khẩu Admin để truy cập (mặc định: admin123)</p>
+      
+      <form onsubmit="handleLogin(event)">
+        <input 
+          type="password" 
+          id="admin-pass" 
+          placeholder="Mật khẩu admin..." 
+          class="w-full bg-mc-dark border border-mc-border focus:border-mc-green rounded-xl px-4 py-3 text-white text-sm mb-4 focus:outline-none"
+          required
+        >
+        <button type="submit" class="w-full bg-mc-green hover:bg-mc-darkgreen text-gray-950 font-bold py-3 rounded-xl text-sm transition">
+          Vào Trang Quản Trị
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADMIN DASHBOARD CONTAINER -->
+  <div id="admin-dashboard" class="hidden">
+    <!-- Top Nav -->
+    <header class="border-b border-mc-border bg-mc-dark px-6 py-4 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <a href="/" class="text-xs text-gray-400 hover:text-white flex items-center gap-1.5 bg-gray-800 px-3 py-1.5 rounded-lg border border-mc-border">
+          <i class="fa-solid fa-arrow-left"></i> Về Shop
+        </a>
+        <h1 class="font-extrabold text-lg text-white">Bảng Quản Trị Shop Minecraft</h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="refreshData()" class="text-xs bg-mc-card hover:bg-mc-border px-3 py-1.5 rounded-lg border border-mc-border text-gray-300 flex items-center gap-1.5">
+          <i class="fa-solid fa-rotate"></i> Làm mới
+        </button>
+        <button onclick="logout()" class="text-xs text-red-400 hover:text-red-300">
+          Đăng xuất
+        </button>
+      </div>
+    </header>
+
+    <div class="max-w-6xl mx-auto px-6 py-8">
+      
+      <!-- Stats Overview -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+        <div class="bg-mc-card border border-mc-border rounded-2xl p-5">
+          <div class="text-xs font-bold text-gray-400 uppercase">Tổng Đơn Hàng</div>
+          <div id="stat-total-orders" class="text-3xl font-black text-white mt-2">0</div>
+        </div>
+        <div class="bg-mc-card border border-mc-border rounded-2xl p-5">
+          <div class="text-xs font-bold text-mc-gold uppercase">Chờ Phát Đồ / Đang Chờ</div>
+          <div id="stat-pending-orders" class="text-3xl font-black text-mc-gold mt-2">0</div>
+        </div>
+        <div class="bg-mc-card border border-mc-border rounded-2xl p-5">
+          <div class="text-xs font-bold text-mc-green uppercase">Đã Phát Thành Công</div>
+          <div id="stat-completed-orders" class="text-3xl font-black text-mc-green mt-2">0</div>
+        </div>
+      </div>
+
+      <!-- Quick Action Tabs -->
+      <div class="flex items-center gap-3 border-b border-mc-border pb-4 mb-6 text-sm">
+        <button onclick="switchTab('orders')" id="tab-orders" class="tab-btn font-bold text-mc-green border-b-2 border-mc-green pb-1 px-2">
+          Quản Lý Đơn Hàng
+        </button>
+        <button onclick="switchTab('items')" id="tab-items" class="tab-btn text-gray-400 hover:text-white pb-1 px-2">
+          Quản Lý Vật Phẩm
+        </button>
+        <button onclick="switchTab('plugin')" id="tab-plugin" class="tab-btn text-gray-400 hover:text-white pb-1 px-2">
+          Kết Nối Plugin Server
+        </button>
+      </div>
+
+      <!-- SECTION: ORDERS -->
+      <div id="sec-orders">
+        <div class="bg-mc-card border border-mc-border rounded-2xl overflow-hidden shadow">
+          <div class="p-4 border-b border-mc-border flex items-center justify-between">
+            <h3 class="font-bold text-white text-sm">Danh Sách Đơn Đặt Mua</h3>
+            <span class="text-xs text-gray-400">Tự động cập nhật</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-mc-dark text-gray-400 font-bold uppercase tracking-wider border-b border-mc-border">
+                <tr>
+                  <th class="p-3.5">Mã Đơn</th>
+                  <th class="p-3.5">Người Chơi (IGN)</th>
+                  <th class="p-3.5">Vật Phẩm</th>
+                  <th class="p-3.5">Giá</th>
+                  <th class="p-3.5">Trạng Thái</th>
+                  <th class="p-3.5">Lệnh Thực Thi</th>
+                  <th class="p-3.5 text-right">Thao Tác</th>
+                </tr>
+              </thead>
+              <tbody id="orders-tbody" class="divide-y divide-mc-border text-gray-300">
+                <!-- Orders will render here -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION: ITEMS -->
+      <div id="sec-items" class="hidden space-y-6">
+        <div class="flex items-center justify-between">
+          <h3 class="font-bold text-white text-base">Danh Sách Vật Phẩm Đang Bán</h3>
+          <button onclick="openAddItemModal()" class="bg-mc-green hover:bg-mc-darkgreen text-gray-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center gap-1.5">
+            <i class="fa-solid fa-plus"></i> Thêm Vật Phẩm Mới
+          </button>
+        </div>
+
+        <div id="items-list-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Item list renders here -->
+        </div>
+      </div>
+
+      <!-- SECTION: PLUGIN CONFIG -->
+      <div id="sec-plugin" class="hidden">
+        <div class="bg-mc-card border border-mc-border rounded-2xl p-6 max-w-2xl">
+          <h3 class="font-bold text-white text-lg mb-2">Thông Tin Kết Nối Với Server Minecraft</h3>
+          <p class="text-xs text-gray-400 mb-6">
+            Copy các thông tin bên dưới dán vào file <code>config.yml</code> của Plugin <b>ShopWebLink</b> trong thư mục <code>plugins/ShopWebLink/</code> trên hosting.
+          </p>
+
+          <div class="space-y-4 text-xs">
+            <div>
+              <label class="font-bold text-gray-300 block mb-1">Địa chỉ Website (web-url):</label>
+              <div class="flex items-center gap-2">
+                <input id="plugin-url-val" type="text" readonly class="flex-1 bg-mc-dark border border-mc-border px-3 py-2 rounded-lg text-gray-200 font-mono" value="">
+                <button onclick="copyPluginVal('plugin-url-val')" class="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-white font-bold">Copy</button>
+              </div>
+            </div>
+
+            <div>
+              <label class="font-bold text-gray-300 block mb-1">Mã Khóa Bí Mật (api-key):</label>
+              <div class="flex items-center gap-2">
+                <input id="plugin-key-val" type="text" readonly class="flex-1 bg-mc-dark border border-mc-border px-3 py-2 rounded-lg text-mc-green font-mono" value="maua_minecraft_key_2026">
+                <button onclick="copyPluginVal('plugin-key-val')" class="bg-gray-800 hover:bg-gray-700 px-3 py-2 rounded-lg text-white font-bold">Copy</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ADD ITEM MODAL -->
+  <div id="add-item-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-mc-card border border-mc-border rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="font-bold text-white text-base">Thêm Vật Phẩm Mới Vào Shop</h3>
+        <button onclick="closeAddItemModal()" class="text-gray-400 hover:text-white">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form onsubmit="handleAddItem(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="font-bold text-gray-300 block mb-1">Tên Vật Phẩm *</label>
+          <input type="text" id="new-item-name" placeholder="Ví dụ: Rìu Chiến Thần Netherite" required class="w-full bg-mc-dark border border-mc-border px-3 py-2 rounded-lg text-white focus:outline-none focus:border-mc-green">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="font-bold text-gray-300 block mb-1">Danh Mục</label>
+            <select id="new-item-cat" class="w-full bg-mc-dark border border-mc-border px-3 py-2 rounded-lg text-white">
+              <option value="weapons">⚔️ Vũ Khí</option>
+              <option value="armor">🛡️ Áo Giáp</option>
+              <option value="resources">💎 Tài Nguyên</option>
+              <option value="ranks">⭐ Quyền Lợi / VIP</option>
+              <option value="free">🎁 Quà Miễn Phí</option>
+            </select>
+          </div>
+          <div>
+            <label class="font-bold text-gray-300 block mb-1">Giá Tiền (VNĐ, để 0 nếu Free)</label>
+            <input type="number" id="new-item-price" value="10000" min="0" required class="w-full bg-mc-dark border border-mc-border px-3 py-2 rounded-lg text-white focus:outline-none focus:border-mc-green">
+          </div>
+        </div>
+
+        <div>
+          <label class="font-bold text-gray-300 block mb-1">Link Ảnh Icon (URL)</label>
+          <input type="url" id="new-item-icon" placeholder="https://..." value="https://raw.githubusercontent.com/InventivetalentDev/minecraft-assets/1.20.4/assets/minecraft/textures/item/diamond_sword.png" required class="w-full bg-mc-dark border border-mc-border px-3 py-2 rounded-lg text-white focus:outline-none">
+        </div>
+
+        <div>
+          <label class="font-bold text-gray-300 block mb-1">Mô tả ngắn</label>
+          <input type="text" id="new-item-desc" placeholder="Mô tả thuộc tính món đồ..." class="w-full bg-mc-dark border border-mc-border px-3 py-2 rounded-lg text-white focus:outline-none">
+        </div>
+
+        <div>
+          <label class="font-bold text-gray-300 block mb-1">Lệnh Console chạy trong Server (dùng {player}) *</label>
+          <textarea id="new-item-cmd" rows="2" placeholder="give {player} diamond_axe 1" required class="w-full bg-mc-dark border border-mc-border px-3 py-2 rounded-lg text-mc-green font-mono focus:outline-none"></textarea>
+          <p class="text-[10px] text-gray-500 mt-1">Gõ mỗi lệnh trên 1 dòng. Hệ thống sẽ thay <code>{player}</code> bằng tên người chơi.</p>
+        </div>
+
+        <button type="submit" class="w-full bg-mc-green hover:bg-mc-darkgreen text-gray-950 font-bold py-2.5 rounded-xl uppercase tracking-wider text-xs transition">
+          Lưu Vật Phẩm
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    let adminToken = sessionStorage.getItem('maua_admin_token') || '';
+    let adminData = { orders: [], items: [] };
+
+    document.getElementById('plugin-url-val').value = window.location.origin;
+
+    if (adminToken) {
+      loadDashboard();
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const pass = document.getElementById('admin-pass').value.trim();
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pass, action: 'login' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          adminToken = pass;
+          sessionStorage.setItem('maua_admin_token', pass);
+          loadDashboard();
+        } else {
+          alert('Sai mật khẩu Admin!');
+        }
+      } catch (err) {
+        alert('Lỗi: ' + err.message);
+      }
+    }
+
+    function logout() {
+      sessionStorage.removeItem('maua_admin_token');
+      location.reload();
+    }
+
+    async function loadDashboard() {
+      document.getElementById('login-modal').classList.add('hidden');
+      document.getElementById('admin-dashboard').classList.remove('hidden');
+      await refreshData();
+    }
+
+    async function refreshData() {
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: adminToken, action: 'get_data' })
+        });
+        const data = await res.json();
+        if (data.success) {
+          adminData = data;
+          renderStats();
+          renderOrders();
+          renderItems();
+        }
+      } catch (err) {
+        console.error('Lỗi tải dữ liệu admin:', err);
+      }
+    }
+
+    function renderStats() {
+      const orders = adminData.orders || [];
+      document.getElementById('stat-total-orders').innerText = orders.length;
+      document.getElementById('stat-pending-orders').innerText = orders.filter(o => o.status !== 'completed').length;
+      document.getElementById('stat-completed-orders').innerText = orders.filter(o => o.status === 'completed').length;
+    }
+
+    function renderOrders() {
+      const tbody = document.getElementById('orders-tbody');
+      const orders = adminData.orders || [];
+
+      if (orders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="p-6 text-center text-gray-500">Chưa có đơn hàng nào</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = orders.map(o => `
+        <tr class="hover:bg-mc-dark/40 transition">
+          <td class="p-3.5 font-mono font-bold text-mc-diamond">#${o.id}</td>
+          <td class="p-3.5 font-bold flex items-center gap-2">
+            <img src="https://mc-heads.net/avatar/${encodeURIComponent(o.player)}/20" class="w-5 h-5 rounded">
+            <span>${o.player}</span>
+          </td>
+          <td class="p-3.5 font-semibold text-white">${o.itemName}</td>
+          <td class="p-3.5">${o.price === 0 ? '<span class="text-mc-green">Free</span>' : o.price.toLocaleString('vi-VN') + ' đ'}</td>
+          <td class="p-3.5">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
+              o.status === 'completed' ? 'bg-emerald-500/20 text-emerald-400' :
+              o.status === 'approved' ? 'bg-mc-gold/20 text-mc-gold' : 'bg-gray-700 text-gray-300'
+            }">
+              ${o.status === 'completed' ? 'ĐÃ PHÁT' : o.status === 'approved' ? 'CHỜ SERVER LẤY' : 'CHỜ DUYỆT'}
+            </span>
+          </td>
+          <td class="p-3.5 font-mono text-[11px] text-gray-400 max-w-xs truncate">${o.commands ? o.commands.join('; ') : ''}</td>
+          <td class="p-3.5 text-right space-x-2">
+            ${o.status !== 'completed' ? `
+              <button onclick="approveOrder('${o.id}')" class="text-mc-green hover:underline font-bold">Duyệt Đồ</button>
+            ` : ''}
+            <button onclick="deleteOrder('${o.id}')" class="text-red-400 hover:underline">Xóa</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderItems() {
+      const container = document.getElementById('items-list-container');
+      const items = adminData.items || [];
+      container.innerHTML = items.map(item => `
+        <div class="bg-mc-card border border-mc-border p-4 rounded-xl flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <img src="${item.icon}" class="w-12 h-12 object-contain rounded-lg">
+            <div>
+              <div class="font-bold text-white text-sm">${item.name}</div>
+              <div class="text-[11px] text-gray-400">${item.price === 0 ? 'Miễn Phí' : item.price.toLocaleString('vi-VN') + ' đ'} • ${item.category}</div>
+              <div class="text-[10px] font-mono text-mc-green mt-0.5">${item.commands ? item.commands[0] : ''}</div>
+            </div>
+          </div>
+          <button onclick="deleteItem('${item.id}')" class="text-xs text-red-400 hover:text-red-300 bg-red-500/10 px-3 py-1.5 rounded-lg border border-red-500/20">
+            Xóa
+          </button>
+        </div>
+      `).join('');
+    }
+
+    async function approveOrder(orderId) {
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: adminToken, action: 'approve_order', payload: { orderId } })
+      });
+      refreshData();
+    }
+
+    async function deleteOrder(orderId) {
+      if (!confirm('Bạn có chắc muốn xóa đơn này?')) return;
+      await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: adminToken, action: 'delete_order', payload: { orderId } })
+      });
+      refreshData();
+    }
+
+    async function deleteItem(itemId) {
+      if (!confirm('Bạn có chắc muốn xóa vật phẩm này?')) return;
+      await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: adminToken, action: 'delete_item', payload: { itemId } })
+      });
+      refreshData();
+    }
+
+    function openAddItemModal() {
+      document.getElementById('add-item-modal').classList.remove('hidden');
+    }
+    function closeAddItemModal() {
+      document.getElementById('add-item-modal').classList.add('hidden');
+    }
+
+    async function handleAddItem(e) {
+      e.preventDefault();
+      const name = document.getElementById('new-item-name').value.trim();
+      const category = document.getElementById('new-item-cat').value;
+      const price = parseInt(document.getElementById('new-item-price').value) || 0;
+      const icon = document.getElementById('new-item-icon').value.trim();
+      const desc = document.getElementById('new-item-desc').value.trim();
+      const cmdText = document.getElementById('new-item-cmd').value.trim();
+      const commands = cmdText.split('\n').map(s => s.trim()).filter(s => s.length > 0);
+
+      const res = await fetch('/api/admin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password: adminToken,
+          action: 'add_item',
+          payload: {
+            item: { name, category, price, icon, description: desc, commands }
+          }
+        })
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        closeAddItemModal();
+        refreshData();
+      } else {
+        alert('Lỗi: ' + data.error);
+      }
+    }
+
+    function switchTab(tab) {
+      ['orders', 'items', 'plugin'].forEach(t => {
+        document.getElementById(`sec-${t}`).classList.add('hidden');
+        document.getElementById(`tab-${t}`).classList.remove('text-mc-green', 'border-b-2', 'border-mc-green', 'font-bold');
+        document.getElementById(`tab-${t}`).classList.add('text-gray-400');
+      });
+      document.getElementById(`sec-${tab}`).classList.remove('hidden');
+      document.getElementById(`tab-${tab}`).classList.add('text-mc-green', 'border-b-2', 'border-mc-green', 'font-bold');
+      document.getElementById(`tab-${tab}`).classList.remove('text-gray-400');
+    }
+
+    function copyPluginVal(id) {
+      const el = document.getElementById(id);
+      navigator.clipboard.writeText(el.value);
+      alert('Đã sao chép vào bộ nhớ tạm!');
+    }
+  </script>
+</body>
+</html>
